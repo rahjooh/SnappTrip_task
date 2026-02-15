@@ -1,0 +1,19 @@
+# DBT and dependencies for Spark + Iceberg pipeline
+dbt-spark==1.7.1
+dbt-core==1.7.4
+
+# For Spark connectivity
+pyspark==3.5.0
+pyarrow==14.0.1
+
+# For Thrift server connection
+thrift==0.16.0
+sasl==0.3.1
+thrift-sasl==0.4.3
+
+# Already installed (from main pipeline)
+confluent-kafka==2.3.0
+avro-python3==1.10.2
+psycopg[binary]==3.1.16
+pandas==2.1.4
+matplotlib==3.8.2

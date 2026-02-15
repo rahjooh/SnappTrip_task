@@ -1,0 +1,69 @@
+groups:
+  - name: data_quality_alerts
+    interval: 30s
+    rules:
+      - alert: SchemaValidationFailure
+        expr: rate(schema_validation_failures_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+          team: data-engineering
+          component: schema-validation
+        annotations:
+          summary: "Schema validation failures detected"
+          description: "{{ $value }} schema validation failures per second in {{ $labels.layer }}"
+
+      - alert: NullValueInRequiredField
+        expr: rate(null_value_errors_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          team: data-engineering
+          component: data-validation
+        annotations:
+          summary: "Null values in required fields"
+          description: "Null values detected in required field {{ $labels.field }} in {{ $labels.table }}"
+
+      - alert: DuplicateRecords
+        expr: duplicate_records_count > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: data-engineering
+          component: data-quality
+        annotations:
+          summary: "High number of duplicate records"
+          description: "{{ $value }} duplicate records detected in {{ $labels.table }}"
+
+      - alert: DataFreshnessIssue
+        expr: time() - data_last_updated_timestamp_seconds > 7200
+        for: 5m
+        labels:
+          severity: warning
+          team: data-engineering
+          component: data-freshness
+        annotations:
+          summary: "Data is stale"
+          description: "Data in {{ $labels.table }} has not been updated for {{ $value | humanizeDuration }}"
+
+      - alert: RowCountAnomaly
+        expr: abs(table_row_count - table_row_count offset 1d) / table_row_count > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          team: data-engineering
+          component: data-quality
+        annotations:
+          summary: "Significant row count change"
+          description: "Row count in {{ $labels.table }} changed by {{ $value | humanizePercentage }} compared to yesterday"
+
+      - alert: GreatExpectationsCheckFailed
+        expr: great_expectations_validation_success == 0
+        for: 1m
+        labels:
+          severity: warning
+          team: data-engineering
+          component: great-expectations
+        annotations:
+          summary: "Great Expectations validation failed"
+          description: "Validation suite {{ $labels.suite }} failed for {{ $labels.table }}"

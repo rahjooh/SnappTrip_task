@@ -1,0 +1,5 @@
+[console_scripts]
+snapptrip-bronze = bronze.kafka_to_iceberg:main
+snapptrip-gold = gold.daily_kpi_aggregator:main
+snapptrip-ingest = ingestion.kafka_producer:main
+snapptrip-silver = silver.booking_state_reconciliation:main

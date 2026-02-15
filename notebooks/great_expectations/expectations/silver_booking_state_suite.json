@@ -1,0 +1,62 @@
+{
+  "expectations": [
+    {
+      "id": "488b9137-26bb-4ef8-be22-60c4ab80d3d0",
+      "kwargs": {
+        "column": "booking_id"
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "548fd7aa-8000-4381-9aee-5a9e1370b117",
+      "kwargs": {
+        "column": "user_id"
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "c32d2521-21b7-45cc-8a57-188c84019212",
+      "kwargs": {
+        "column": "hotel_id"
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_not_be_null"
+    },
+    {
+      "id": "2865c6e3-053e-48de-a8d9-51a8e9227b70",
+      "kwargs": {
+        "column": "status",
+        "value_set": [
+          "created",
+          "confirmed",
+          "cancelled"
+        ]
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_in_set"
+    },
+    {
+      "id": "d7f8079f-85a3-437d-9720-575d97d1859a",
+      "kwargs": {
+        "column": "price",
+        "min_value": 0.0,
+        "strict_min": true
+      },
+      "meta": {},
+      "severity": "critical",
+      "type": "expect_column_values_to_be_between"
+    }
+  ],
+  "id": "1acd3c17-8892-445a-9bc6-4edf43196080",
+  "meta": {
+    "great_expectations_version": "1.12.3"
+  },
+  "name": "silver_booking_state_suite",
+  "notes": null
+}

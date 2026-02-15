@@ -1,0 +1,102 @@
+version: 2
+
+models:
+  - name: gold_daily_kpis_v2
+    description: |
+      Daily KPI aggregations by city from Silver layer.
+      This is the Gold layer that provides business-ready metrics
+      for analytics and reporting.
+    
+    config:
+      tags: ['gold', 'kpi', 'daily', 'analytics']
+    
+    columns:
+      - name: booking_date
+        description: Date of bookings (truncated to day)
+        tests:
+          - not_null
+      
+      - name: city
+        description: City where bookings were made
+        tests:
+          - not_null
+      
+      - name: total_bookings
+        description: Total number of bookings
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      
+      - name: confirmed_bookings
+        description: Number of confirmed bookings
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      
+      - name: cancelled_bookings
+        description: Number of cancelled bookings
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      
+      - name: cancellation_rate
+        description: Percentage of cancelled bookings
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "BETWEEN 0 AND 100"
+              config:
+                severity: warn
+      
+      - name: total_revenue
+        description: Total revenue from confirmed bookings
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+              config:
+                severity: error
+      
+      - name: avg_booking_price
+        description: Average price across all bookings
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+      
+      - name: unique_customers
+        description: Number of unique customers
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+
+    # Data quality tests at model level
+    tests:
+      # Unique combination of date and city
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - booking_date
+            - city
+          config:
+            severity: error
+      
+      # Revenue consistency: total_revenue should equal sum of confirmed booking prices
+      - dbt_utils.expression_is_true:
+          expression: "confirmed_bookings + cancelled_bookings + pending_bookings = total_bookings"
+          config:
+            severity: error
+            error_if: ">0"
+      
+      # Logical check: confirmed bookings <= total bookings
+      - dbt_utils.expression_is_true:
+          expression: "confirmed_bookings <= total_bookings"
+          config:
+            severity: error
+      
+      # No future dates
+      - dbt_utils.expression_is_true:
+          expression: "booking_date <= CURRENT_DATE()"
+          config:
+            severity: warn

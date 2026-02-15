@@ -1,0 +1,9 @@
+apache-airflow==2.8.0
+apache-airflow-providers-apache-spark==4.5.0
+apache-airflow-providers-postgres==5.10.0
+apache-airflow-providers-celery==3.5.0
+apache-airflow-providers-redis==3.5.0
+pyspark==3.5.0
+great-expectations==0.18.8
+psycopg2-binary==2.9.9
+prometheus-client==0.19.0

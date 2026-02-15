@@ -1,0 +1,5 @@
+bronze
+common
+gold
+ingestion
+silver
