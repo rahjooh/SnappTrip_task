@@ -205,14 +205,14 @@ flowchart TD
         GROUP[Group by<br/>booking_date × city]
         
         subgraph "Core Metrics"
-            COUNT_TOTAL[COUNT(*)<br/>total_bookings]
-            COUNT_CONF[SUM(is_confirmed)<br/>confirmed_bookings]
-            COUNT_CANC[SUM(is_cancelled)<br/>cancelled_bookings]
+            COUNT_TOTAL["COUNT(*)<br/>total_bookings"]
+            COUNT_CONF["SUM(is_confirmed)<br/>confirmed_bookings"]
+            COUNT_CANC["SUM(is_cancelled)<br/>cancelled_bookings"]
         end
         
         subgraph "Revenue Metrics" 
-            REV_TOTAL[SUM(revenue)<br/>total_revenue]
-            REV_AVG[AVG(price)<br/>avg_booking_price]
+            REV_TOTAL["SUM(revenue)<br/>total_revenue"]
+            REV_AVG["AVG(price)<br/>avg_booking_price"]
         end
         
         subgraph "Calculated KPIs"
@@ -289,6 +289,15 @@ flowchart TD
 
 ## 🎛️ Configuration & Assumptions
 
+### Data (Default Sample)
+
+The pipeline reads from **`data/bronze/`**. The default bronze data is the sample dataset:
+- **5 users**: u1–u5  
+- **5 bookings**: b1–b5 (with created/confirmed/cancelled state transitions)  
+- **3 hotels**: h1 (Tehran), h2 (Shiraz), h3 (Isfahan)  
+
+Silver and gold outputs therefore contain only these IDs. To use different data, replace the files in `data/bronze/` (or copy from `data/` after updating the source CSVs). The pipeline expects timestamp format `yyyy-MM-dd'T'HH:mm:ss` in bookings and events CSVs.
+
 ### Key Assumptions
 
 1. **Timestamp Authority**: `bookings_raw.updated_at` represents the system-of-record timestamp for booking state changes
@@ -334,18 +343,26 @@ python run_pipeline.py
 
 ### Expected Output
 
-The pipeline will create:
-- `output/silver/bookings_silver/`: Latest booking state per booking_id
-- `output/gold/daily_booking_kpis/`: Daily KPIs aggregated by city
+With the default sample data (5 users, 5 bookings, 3 hotels), the pipeline creates:
+- `output/silver/bookings_silver/`: Latest booking state per booking_id (5 rows: b1–b5)
+- `output/gold/daily_booking_kpis/`: Daily KPIs aggregated by date × city
+- `output/gold/customer_behavior_analytics/`: One row per user (5 rows: u1–u5)
+- `output/gold/hotel_performance_analytics/`: One row per hotel (3 rows: h1–h3)
+
+Silver and gold outputs contain only **booking_id**, **user_id**, and **hotel_id** present in the bronze/raw data.
 
 ## 📁 Enhanced Project Structure
 
 ```
 SnappTrip_simple/
-├── 📊 data/bronze/              # Raw input data with edge cases
-│   ├── bookings_raw.csv         # Complex booking states & transitions
-│   ├── booking_events_raw.csv   # Late-arriving events & duplicates  
-│   └── hotels_raw.csv           # Hotel reference data
+├── 📊 data/                     # Source raw data (sample dataset)
+│   ├── bookings_raw.csv         # Sample bookings (5 users, 5 bookings)
+│   ├── booking_events_raw.csv   # Sample events stream
+│   ├── hotels_raw.csv           # Sample hotels (3 hotels: h1, h2, h3)
+│   └── bronze/                  # Pipeline input (same as data/ by default)
+│       ├── bookings_raw.csv     # Loaded by pipeline
+│       ├── booking_events_raw.csv
+│       └── hotels_raw.csv
 │   
 ├── 🗃️ sql/                      # Enterprise SQL transformations
 │   ├── silver/                  # Data quality & conflict resolution
@@ -372,10 +389,12 @@ SnappTrip_simple/
 
 ### **🔧 File Descriptions**
 
-#### **Bronze Layer (Raw Data)**
-- `bookings_raw.csv`: Mutable booking records with complex state transitions, invalid data, edge cases
-- `booking_events_raw.csv`: Append-only events including late arrivals, duplicates, missing data  
-- `hotels_raw.csv`: Hotel reference data for geographic and quality context
+#### **Data & Bronze Layer**
+- **`data/`**: Source raw CSVs (sample: 5 users u1–u5, 5 bookings b1–b5, 3 hotels h1–h3). Timestamps use ISO format (`yyyy-MM-dd'T'HH:mm:ss`).
+- **`data/bronze/`**: Input for the pipeline. By default this matches the sample in `data/` so that silver and gold contain only IDs from this dataset.
+- `bookings_raw.csv`: Mutable booking records with state transitions
+- `booking_events_raw.csv`: Append-only events (created, confirmed, cancelled)
+- `hotels_raw.csv`: Hotel reference data (hotel_id, city, star_rating)
 
 #### **Silver Layer (Data Quality)**
 - `bookings_silver.sql`: 500+ lines of advanced logic handling conflicts, validation, business rules

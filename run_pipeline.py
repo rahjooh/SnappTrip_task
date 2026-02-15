@@ -25,15 +25,15 @@ def load_bronze_tables(spark, base_path):
     
     print("📊 Loading Bronze layer (raw data)...")
     
-    # Load bookings_raw
+    # Load bookings_raw (supports both ISO 'T' and space in timestamps)
     bookings_raw_path = f"{base_path}/data/bronze/bookings_raw.csv"
-    bookings_raw_df = spark.read.csv(bookings_raw_path, header=True, inferSchema=True, timestampFormat="yyyy-MM-dd HH:mm:ss")
+    bookings_raw_df = spark.read.csv(bookings_raw_path, header=True, inferSchema=True, timestampFormat="yyyy-MM-dd'T'HH:mm:ss")
     bookings_raw_df.createOrReplaceTempView("bookings_raw")
     print(f"   ✓ Loaded bookings_raw: {bookings_raw_df.count()} records")
     
-    # Load booking_events_raw  
+    # Load booking_events_raw (supports ISO 'T' in timestamps)
     events_raw_path = f"{base_path}/data/bronze/booking_events_raw.csv"
-    events_raw_df = spark.read.csv(events_raw_path, header=True, inferSchema=True, timestampFormat="yyyy-MM-dd HH:mm:ss")
+    events_raw_df = spark.read.csv(events_raw_path, header=True, inferSchema=True, timestampFormat="yyyy-MM-dd'T'HH:mm:ss")
     events_raw_df.createOrReplaceTempView("booking_events_raw")
     print(f"   ✓ Loaded booking_events_raw: {events_raw_df.count()} records")
     

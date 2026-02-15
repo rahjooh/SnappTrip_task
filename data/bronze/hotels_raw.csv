@@ -1,6 +1,4 @@
 hotel_id,city,star_rating
-H001,Tehran,4
-H002,Isfahan,5
-H003,Shiraz,3
-H004,Mashhad,4
-H005,Tabriz,5
+h1,Tehran,4
+h2,Shiraz,5
+h3,Isfahan,3
