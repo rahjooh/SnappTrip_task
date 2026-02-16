@@ -1,0 +1,47 @@
+snapptrip:
+  target: dev
+  outputs:
+    dev:
+      type: spark
+      method: thrift
+      host: spark-master
+      port: 10000
+      user: airflow
+      schema: local
+      threads: 4
+      connect_timeout: 60
+      connect_retries: 3
+      # Iceberg configuration
+      spark_config:
+        spark.sql.extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+        spark.sql.catalog.local: org.apache.iceberg.spark.SparkCatalog
+        spark.sql.catalog.local.type: hadoop
+        spark.sql.catalog.local.warehouse: hdfs://namenode:9000/lakehouse
+    
+    local:
+      type: spark
+      method: session
+      host: local
+      schema: local
+      threads: 4
+      # For local development with notebooks - uses HDFS
+      spark_config:
+        spark.sql.extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+        spark.sql.catalog.local: org.apache.iceberg.spark.SparkCatalog
+        spark.sql.catalog.local.type: hadoop
+        spark.sql.catalog.local.warehouse: hdfs://localhost:9000/lakehouse
+        # Iceberg write format - Snappy Parquet
+        spark.sql.iceberg.compression-codec: snappy
+        spark.sql.parquet.compression.codec: snappy
+        spark.sql.iceberg.write.format.default: parquet
+    
+    prod:
+      type: postgres
+      host: postgres
+      port: 5432
+      user: airflow
+      password: airflow
+      dbname: gold_layer
+      schema: gold
+      threads: 4
+      keepalives_idle: 0

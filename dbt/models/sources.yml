@@ -1,0 +1,57 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: Bronze layer - raw data from Kafka ingested into Iceberg
+    database: local
+    schema: bronze
+    tables:
+      - name: bookings_raw
+        description: Raw booking events from Kafka
+        columns:
+          - name: booking_id
+            description: Unique booking identifier
+            tests:
+              - not_null
+          - name: user_id
+            description: User who made the booking
+          - name: hotel_id
+            description: Hotel identifier
+          - name: status
+            description: Booking status (created, confirmed, cancelled)
+          - name: price
+            description: Booking price
+            tests:
+              - not_null
+          - name: created_at
+            description: Booking creation timestamp
+          - name: updated_at
+            description: Last update timestamp
+          - name: processing_ts
+            description: When this record was processed into Bronze
+        
+        freshness:
+          warn_after: {count: 1, period: hour}
+          error_after: {count: 24, period: hour}
+        
+        loaded_at_field: processing_ts
+
+  - name: reference
+    description: Reference data (hotels, cities, etc.)
+    database: local
+    schema: reference
+    tables:
+      - name: hotels
+        description: Hotel master data
+        columns:
+          - name: hotel_id
+            description: Unique hotel identifier
+            tests:
+              - unique
+              - not_null
+          - name: city
+            description: City where hotel is located
+            tests:
+              - not_null
+          - name: star_rating
+            description: Hotel star rating (1-5)

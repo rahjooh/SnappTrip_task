@@ -1,0 +1,60 @@
+# Core Data Processing
+pyspark==3.5.0
+# Note: Using Airflow 2.7.2 for better stability and compatibility
+# For Python 3.13+, you may need to use Airflow 3.x or Python 3.11
+apache-airflow==2.7.2
+apache-airflow-providers-apache-spark==4.3.0
+apache-airflow-providers-postgres==5.7.1
+apache-airflow-providers-celery==3.4.1
+apache-airflow-providers-redis==3.4.0
+dbt-core==1.7.4
+dbt-spark==1.7.1
+
+# Kafka & Streaming
+kafka-python==2.0.2
+confluent-kafka==2.3.0
+avro-python3==1.10.2
+
+# Data Quality
+great-expectations==0.18.8
+
+# Iceberg
+pyiceberg==0.5.1
+
+# Database Drivers
+# Using psycopg 3 binary which has better wheel support for Python 3.13
+psycopg[binary]>=3.1.12
+sqlalchemy==2.0.25
+
+# ML Platform (optional - install separately if needed)
+# feast==0.35.0
+# kfp==2.5.0
+# mlflow==2.9.0
+
+# Monitoring & Observability
+prometheus-client==0.19.0
+opentelemetry-api==1.22.0
+opentelemetry-sdk==1.22.0
+opentelemetry-instrumentation==0.43b0
+
+# Testing
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+chispa==0.9.4
+testcontainers==3.7.1
+
+# Utilities
+python-dotenv==1.0.0
+pyyaml==6.0.1
+click==8.1.7
+pandas==2.1.4
+numpy==1.26.2
+pyarrow==14.0.2
+
+# Development
+black==23.12.1
+flake8==7.0.0
+mypy==1.8.0
+isort==5.13.2
+pre-commit==3.6.0

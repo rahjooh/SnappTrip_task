@@ -1,0 +1,92 @@
+version: 2
+
+models:
+  - name: silver_booking_state
+    description: |
+      Deduplicated and enriched booking data with hotel information.
+      This is the Silver layer that transforms raw Bronze data into
+      clean, business-ready data.
+    
+    config:
+      tags: ['silver', 'booking', 'core']
+    
+    columns:
+      - name: booking_id
+        description: Unique booking identifier
+        tests:
+          - unique
+          - not_null
+      
+      - name: user_id
+        description: User who made the booking
+        tests:
+          - not_null
+      
+      - name: hotel_id
+        description: Hotel identifier
+        tests:
+          - not_null
+          - relationships:
+              to: source('reference', 'hotels')
+              field: hotel_id
+      
+      - name: status
+        description: Booking status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['created', 'confirmed', 'cancelled']
+      
+      - name: price
+        description: Booking price in local currency
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+              config:
+                severity: error
+      
+      - name: created_at
+        description: When the booking was created
+        tests:
+          - not_null
+      
+      - name: updated_at
+        description: When the booking was last updated
+        tests:
+          - not_null
+      
+      - name: city
+        description: City where the hotel is located (enriched from hotels)
+        tests:
+          - not_null
+      
+      - name: star_rating
+        description: Hotel star rating (1-5)
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "BETWEEN 1 AND 5"
+      
+      - name: last_updated_ts
+        description: Timestamp when this Silver record was last processed
+        tests:
+          - not_null
+
+    # Data quality tests
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - booking_id
+      
+      # Test: created_at should be <= updated_at
+      - dbt_utils.expression_is_true:
+          expression: "created_at <= updated_at"
+          config:
+            severity: error
+            error_if: ">0"
+      
+      # Test: No future dates
+      - dbt_utils.expression_is_true:
+          expression: "created_at <= CURRENT_TIMESTAMP()"
+          config:
+            severity: warn

@@ -1,0 +1,68 @@
+services:
+  namenode:
+    image: apache/hadoop:3.3.6
+    container_name: hdfs-namenode
+    hostname: namenode
+    command: ["hdfs", "namenode"]
+    ports:
+      - "9870:9870"  # NameNode UI
+      - "9000:9000"  # NameNode RPC
+    environment:
+      CLUSTER_NAME: snapptrip-cluster
+      HDFS_CONF_dfs_replication: 2
+      HDFS_CONF_dfs_namenode_name_dir: /hadoop/dfs/name
+      HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check: "false"
+    volumes:
+      - namenode-data:/hadoop/dfs/name
+    networks:
+      - hdfs-network
+    healthcheck:
+      test: ["CMD", "hdfs", "dfsadmin", "-report"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  datanode1:
+    image: apache/hadoop:3.3.6
+    container_name: hdfs-datanode1
+    hostname: datanode1
+    command: ["hdfs", "datanode"]
+    depends_on:
+      - namenode
+    environment:
+      CLUSTER_NAME: snapptrip-cluster
+      HDFS_CONF_dfs_datanode_data_dir: /hadoop/dfs/data
+      HDFS_CONF_dfs_datanode_address: 0.0.0.0:9866
+      HDFS_CONF_dfs_datanode_http_address: 0.0.0.0:9864
+      HDFS_CONF_dfs_datanode_ipc_address: 0.0.0.0:9867
+    volumes:
+      - datanode1-data:/hadoop/dfs/data
+    networks:
+      - hdfs-network
+
+  datanode2:
+    image: apache/hadoop:3.3.6
+    container_name: hdfs-datanode2
+    hostname: datanode2
+    command: ["hdfs", "datanode"]
+    depends_on:
+      - namenode
+    environment:
+      CLUSTER_NAME: snapptrip-cluster
+      HDFS_CONF_dfs_datanode_data_dir: /hadoop/dfs/data
+      HDFS_CONF_dfs_datanode_address: 0.0.0.0:9866
+      HDFS_CONF_dfs_datanode_http_address: 0.0.0.0:9864
+      HDFS_CONF_dfs_datanode_ipc_address: 0.0.0.0:9867
+    volumes:
+      - datanode2-data:/hadoop/dfs/data
+    networks:
+      - hdfs-network
+
+networks:
+  hdfs-network:
+    driver: bridge
+
+volumes:
+  namenode-data:
+  datanode1-data:
+  datanode2-data:

@@ -1,0 +1,72 @@
+groups:
+  - name: pipeline_alerts
+    interval: 30s
+    rules:
+      - alert: PipelineFailure
+        expr: rate(airflow_task_failed_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          team: data-engineering
+          component: airflow
+        annotations:
+          summary: "Pipeline task failed"
+          description: "Task {{ $labels.task_id }} in DAG {{ $labels.dag_id }} failed. Check Airflow logs immediately."
+          runbook_url: "https://docs.snapptrip.com/runbooks/pipeline-failure"
+
+      - alert: HighPipelineLag
+        expr: pipeline_lag_seconds > 3600
+        for: 5m
+        labels:
+          severity: warning
+          team: data-engineering
+          component: pipeline
+        annotations:
+          summary: "Pipeline lag exceeds 1 hour"
+          description: "Pipeline {{ $labels.layer }} has lag of {{ $value }} seconds (> 1 hour threshold)"
+          runbook_url: "https://docs.snapptrip.com/runbooks/high-lag"
+
+      - alert: DataQualityFailure
+        expr: rate(data_quality_failures_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          team: data-engineering
+          component: data-quality
+        annotations:
+          summary: "Data quality check failed"
+          description: "Data quality expectation {{ $labels.expectation }} failed in {{ $labels.layer }} layer"
+          runbook_url: "https://docs.snapptrip.com/runbooks/data-quality-failure"
+
+      - alert: LowDataVolume
+        expr: rate(pipeline_records_processed_total[1h]) < 100
+        for: 15m
+        labels:
+          severity: warning
+          team: data-engineering
+          component: pipeline
+        annotations:
+          summary: "Unusually low data volume"
+          description: "Only {{ $value }} records processed in the last hour for {{ $labels.layer }}"
+
+      - alert: HighRecordRejectionRate
+        expr: rate(pipeline_records_rejected_total[5m]) / rate(pipeline_records_processed_total[5m]) > 0.05
+        for: 10m
+        labels:
+          severity: warning
+          team: data-engineering
+          component: validation
+        annotations:
+          summary: "High record rejection rate"
+          description: "{{ $value | humanizePercentage }} of records are being rejected in {{ $labels.layer }}"
+
+      - alert: PipelineStuck
+        expr: time() - pipeline_last_success_timestamp_seconds > 3600
+        for: 5m
+        labels:
+          severity: critical
+          team: data-engineering
+          component: pipeline
+        annotations:
+          summary: "Pipeline has not completed successfully recently"
+          description: "Pipeline {{ $labels.pipeline }} last succeeded {{ $value | humanizeDuration }} ago"

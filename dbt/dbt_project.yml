@@ -1,0 +1,45 @@
+name: 'snapptrip_gold'
+version: '1.0.0'
+config-version: 2
+
+profile: 'snapptrip'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  snapptrip_gold:
+    staging:
+      +materialized: view
+      +schema: staging
+    silver:
+      +materialized: incremental
+      +file_format: iceberg
+      +schema: silver
+      +incremental_strategy: merge
+      +on_schema_change: fail
+      +tags: ['silver']
+    gold:
+      +materialized: incremental
+      +file_format: iceberg
+      +schema: gold
+      +incremental_strategy: merge
+      +on_schema_change: fail
+      +tags: ['gold', 'kpi']
+
+seeds:
+  snapptrip_gold:
+    +schema: seeds
+
+vars:
+  start_date: '2025-01-01'
+  end_date: '2025-12-31'

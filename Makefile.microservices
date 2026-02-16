@@ -1,0 +1,192 @@
+.PHONY: help start-all stop-all status-all clean-all
+
+help:
+	@echo "======================================"
+	@echo "SnappTrip Microservices Architecture"
+	@echo "======================================"
+	@echo ""
+	@echo "🚀 Quick Start:"
+	@echo "  make start-all       - Start all services and layers"
+	@echo "  make stop-all        - Stop all services and layers"
+	@echo "  make status-all      - Check status of all services"
+	@echo "  make clean-all       - Clean all volumes and data"
+	@echo ""
+	@echo "📦 Individual Services:"
+	@echo "  make start-kafka     - Start Kafka service"
+	@echo "  make start-hdfs      - Start HDFS service"
+	@echo "  make start-postgres  - Start PostgreSQL service"
+	@echo ""
+	@echo "🎯 Individual Layers:"
+	@echo "  make start-bronze    - Start Bronze layer"
+	@echo "  make start-silver    - Start Silver layer"
+	@echo "  make start-gold      - Start Gold layer"
+	@echo ""
+	@echo "🧪 Testing:"
+	@echo "  make test-bronze     - Test Bronze layer"
+	@echo "  make test-silver     - Test Silver layer"
+	@echo "  make test-gold       - Test Gold layer"
+	@echo "  make test-all        - Test all layers"
+	@echo ""
+	@echo "📓 Notebooks:"
+	@echo "  make notebooks       - Start all Jupyter notebooks"
+	@echo ""
+
+# ============================================
+# Start All Services
+# ============================================
+
+start-all: start-services start-layers
+	@echo "✅ All services and layers started!"
+	@echo ""
+	@echo "🌐 Access Points:"
+	@echo "  Kafka UI:        http://localhost:8080"
+	@echo "  HDFS NameNode:   http://localhost:9870"
+	@echo "  PostgreSQL:      localhost:5432"
+	@echo "  PgAdmin:         http://localhost:5050"
+	@echo "  Bronze Jupyter:  http://localhost:8888"
+	@echo "  Silver Jupyter:  http://localhost:8889"
+	@echo "  Gold Jupyter:    http://localhost:8890"
+	@echo ""
+
+start-services:
+	@echo "🚀 Starting infrastructure services..."
+	@cd services/kafka-service && make up
+	@cd services/hdfs-service && make up
+	@cd services/postgres-service && make up
+	@echo "✅ Infrastructure services started!"
+
+start-layers:
+	@echo "🚀 Starting data layers..."
+	@cd layers/bronze-layer && make up
+	@cd layers/silver-layer && make up
+	@cd layers/gold-layer && make up
+	@echo "✅ Data layers started!"
+
+# ============================================
+# Stop All Services
+# ============================================
+
+stop-all: stop-layers stop-services
+	@echo "✅ All services and layers stopped!"
+
+stop-services:
+	@echo "🛑 Stopping infrastructure services..."
+	@cd services/kafka-service && make down
+	@cd services/hdfs-service && make down
+	@cd services/postgres-service && make down
+
+stop-layers:
+	@echo "🛑 Stopping data layers..."
+	@cd layers/bronze-layer && make down
+	@cd layers/silver-layer && make down
+	@cd layers/gold-layer && make down
+
+# ============================================
+# Individual Services
+# ============================================
+
+start-kafka:
+	@cd services/kafka-service && make up
+
+start-hdfs:
+	@cd services/hdfs-service && make up
+
+start-postgres:
+	@cd services/postgres-service && make up
+
+# ============================================
+# Individual Layers
+# ============================================
+
+start-bronze:
+	@cd layers/bronze-layer && make up
+
+start-silver:
+	@cd layers/silver-layer && make up
+
+start-gold:
+	@cd layers/gold-layer && make up
+
+# ============================================
+# Status
+# ============================================
+
+status-all:
+	@echo "📊 Service Status:"
+	@echo ""
+	@echo "Kafka Service:"
+	@cd services/kafka-service && make status
+	@echo ""
+	@echo "HDFS Service:"
+	@cd services/hdfs-service && make status
+	@echo ""
+	@echo "PostgreSQL Service:"
+	@cd services/postgres-service && make status
+	@echo ""
+	@echo "Bronze Layer:"
+	@cd layers/bronze-layer && docker-compose ps
+	@echo ""
+	@echo "Silver Layer:"
+	@cd layers/silver-layer && docker-compose ps
+	@echo ""
+	@echo "Gold Layer:"
+	@cd layers/gold-layer && docker-compose ps
+
+# ============================================
+# Testing
+# ============================================
+
+test-bronze:
+	@cd layers/bronze-layer && make test
+
+test-silver:
+	@cd layers/silver-layer && make test
+
+test-gold:
+	@cd layers/gold-layer && make test
+
+test-all: test-bronze test-silver test-gold
+	@echo "✅ All tests completed!"
+
+# ============================================
+# Notebooks
+# ============================================
+
+notebooks:
+	@echo "📓 Starting all Jupyter notebooks..."
+	@cd layers/bronze-layer && make notebook
+	@cd layers/silver-layer && make notebook
+	@cd layers/gold-layer && make notebook
+	@echo ""
+	@echo "📓 Jupyter Notebooks:"
+	@echo "  Bronze: http://localhost:8888"
+	@echo "  Silver: http://localhost:8889"
+	@echo "  Gold:   http://localhost:8890"
+
+# ============================================
+# Clean
+# ============================================
+
+clean-all:
+	@echo "🧹 Cleaning all services and layers..."
+	@cd services/kafka-service && make clean
+	@cd services/hdfs-service && make clean
+	@cd services/postgres-service && make clean
+	@cd layers/bronze-layer && make clean
+	@cd layers/silver-layer && make clean
+	@cd layers/gold-layer && make clean
+	@echo "✅ All cleaned!"
+
+# ============================================
+# Run Pipeline
+# ============================================
+
+run-pipeline:
+	@echo "🚀 Running end-to-end pipeline..."
+	@echo "1. Running Bronze ingestion..."
+	@cd layers/bronze-layer && make run
+	@echo "2. Running Silver processing..."
+	@cd layers/silver-layer && make run
+	@echo "3. Running Gold aggregations..."
+	@cd layers/gold-layer && make run
+	@echo "✅ Pipeline completed!"

@@ -1,0 +1,91 @@
+version: 2
+
+sources:
+  - name: silver
+    description: Silver layer tables from Iceberg
+    database: local
+    schema: silver
+    tables:
+      - name: bookings
+        description: Reconciled booking state
+        columns:
+          - name: booking_id
+            description: Unique booking identifier
+            tests:
+              - not_null
+              - unique
+          - name: status
+            description: Booking status
+            tests:
+              - accepted_values:
+                  values: ['created', 'confirmed', 'cancelled']
+
+models:
+  - name: gold_daily_kpis
+    description: "Daily booking KPIs aggregated by city"
+    columns:
+      - name: booking_date
+        description: "Date when booking was created"
+        tests:
+          - not_null
+      
+      - name: city
+        description: "City where hotel is located"
+        tests:
+          - not_null
+      
+      - name: total_bookings
+        description: "Total number of bookings"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      
+      - name: confirmed_bookings
+        description: "Number of confirmed bookings"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      
+      - name: cancelled_bookings
+        description: "Number of cancelled bookings"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      
+      - name: cancellation_rate
+        description: "Percentage of bookings that were cancelled"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+              inclusive: true
+      
+      - name: total_revenue
+        description: "Total revenue from confirmed bookings"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      
+      - name: avg_booking_price
+        description: "Average price across all bookings"
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "> 0"
+      
+      - name: avg_star_rating
+        description: "Average hotel star rating"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 5
+              inclusive: true
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - booking_date
+            - city

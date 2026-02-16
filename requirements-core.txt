@@ -1,0 +1,38 @@
+# Core Requirements - Minimal installation for development and testing
+# Use this if you encounter issues with the full requirements.txt
+
+# Spark & Data Processing
+pyspark==3.5.0
+
+# Kafka & Streaming
+kafka-python==2.0.2
+confluent-kafka==2.3.0
+avro-python3==1.10.2
+
+# Database
+# Note: psycopg2-binary may need PostgreSQL dev libraries on some systems
+# Alternative: use psycopg (pure Python, no compilation needed)
+psycopg[binary]==3.1.16
+sqlalchemy==2.0.25
+
+# Utilities
+python-dotenv==1.0.0
+pyyaml==6.0.1
+pandas==2.1.4
+numpy==1.26.2
+pyarrow==14.0.2
+
+# Data Quality
+great-expectations==0.18.8
+
+# Testing
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+chispa==0.9.4
+
+# Development
+black==23.12.1
+flake8==7.0.0
+mypy==1.8.0
+isort==5.13.2
