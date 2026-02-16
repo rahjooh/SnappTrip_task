@@ -3,7 +3,6 @@ version: 2
 sources:
   - name: silver
     description: Silver layer tables from Iceberg
-    database: local
     schema: silver
     tables:
       - name: bookings

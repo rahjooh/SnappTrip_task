@@ -3,7 +3,6 @@ version: 2
 sources:
   - name: bronze
     description: Bronze layer - raw data from Kafka ingested into Iceberg
-    database: local
     schema: bronze
     tables:
       - name: bookings_raw
@@ -38,7 +37,6 @@ sources:
 
   - name: reference
     description: Reference data (hotels, cities, etc.)
-    database: local
     schema: reference
     tables:
       - name: hotels

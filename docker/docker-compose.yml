@@ -169,6 +169,21 @@ services:
       - hadoop-datanode:/hadoop/dfs/data
     command: ["hdfs", "datanode"]
 
+  # ========== DBT runner (same network as HDFS; fixes RPC version mismatch when running from host) ==========
+  dbt-run:
+    build:
+      context: ./dbt-run
+      dockerfile: Dockerfile
+    container_name: dbt-run
+    hostname: dbt-run
+    networks:
+      - data-platform
+    depends_on:
+      - namenode
+    volumes:
+      - ../dbt:/dbt
+    working_dir: /dbt
+
   # ========== Spark ==========
   spark-master:
     build:
@@ -221,6 +236,28 @@ services:
       - ../../src:/opt/spark/jobs
       - ./spark/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
     command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077 --cores 2 --memory 4g
+
+  # ========== Jupyter Notebook (same network as HDFS; avoids RPC version mismatch) ==========
+  notebook:
+    build:
+      context: ./notebook
+      dockerfile: Dockerfile
+    container_name: notebook
+    hostname: notebook
+    networks:
+      - data-platform
+    ports:
+      - "8888:8888"
+    environment:
+      - LAKEHOUSE_WAREHOUSE=hdfs://namenode:9000/lakehouse
+      - KAFKA_BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092
+    volumes:
+      - ../../notebooks:/workspace/notebooks
+      - ../../src:/workspace/src
+    working_dir: /workspace/notebooks
+    depends_on:
+      - namenode
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 
   # ========== PostgreSQL ==========
   postgres:

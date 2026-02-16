@@ -7,7 +7,7 @@ snapptrip:
       host: spark-master
       port: 10000
       user: airflow
-      schema: local
+      schema: default
       threads: 4
       connect_timeout: 60
       connect_retries: 3
@@ -17,20 +17,41 @@ snapptrip:
         spark.sql.catalog.local: org.apache.iceberg.spark.SparkCatalog
         spark.sql.catalog.local.type: hadoop
         spark.sql.catalog.local.warehouse: hdfs://namenode:9000/lakehouse
+        spark.sql.defaultCatalog: local
     
     local:
       type: spark
       method: session
       host: local
-      schema: local
+      schema: default
       threads: 4
-      # For local development with notebooks - uses HDFS
-      spark_config:
+      # Session method uses server_side_parameters (not spark_config) when building SparkSession
+      server_side_parameters:
+        # Put Hadoop 3.3.6 first so it overrides Spark's bundled Hadoop and matches Docker HDFS (avoids "RPC response has invalid length")
+        spark.jars.packages: org.apache.hadoop:hadoop-client:3.3.6,org.apache.hadoop:hadoop-hdfs-client:3.3.6,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.4.3
         spark.sql.extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
         spark.sql.catalog.local: org.apache.iceberg.spark.SparkCatalog
         spark.sql.catalog.local.type: hadoop
         spark.sql.catalog.local.warehouse: hdfs://localhost:9000/lakehouse
-        # Iceberg write format - Snappy Parquet
+        spark.sql.defaultCatalog: local
+        spark.sql.iceberg.compression-codec: snappy
+        spark.sql.parquet.compression.codec: snappy
+        spark.sql.iceberg.write.format.default: parquet
+
+    # Run from Docker on data-platform network; uses namenode:9000 so HDFS client/server match (fixes RPC invalid length)
+    local_docker:
+      type: spark
+      method: session
+      host: local
+      schema: default
+      threads: 4
+      server_side_parameters:
+        spark.jars.packages: org.apache.hadoop:hadoop-client:3.3.6,org.apache.hadoop:hadoop-hdfs-client:3.3.6,org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.4.3
+        spark.sql.extensions: org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions
+        spark.sql.catalog.local: org.apache.iceberg.spark.SparkCatalog
+        spark.sql.catalog.local.type: hadoop
+        spark.sql.catalog.local.warehouse: hdfs://namenode:9000/lakehouse
+        spark.sql.defaultCatalog: local
         spark.sql.iceberg.compression-codec: snappy
         spark.sql.parquet.compression.codec: snappy
         spark.sql.iceberg.write.format.default: parquet
